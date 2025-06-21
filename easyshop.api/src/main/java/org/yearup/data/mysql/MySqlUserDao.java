@@ -26,27 +26,47 @@ public class MySqlUserDao extends MySqlDaoBase implements UserDao
     {
         String sql = "INSERT INTO users (username, hashed_password, role) VALUES (?, ?, ?)";
         String hashedPassword = new BCryptPasswordEncoder().encode(newUser.getPassword());
+        // ++ We hash the password to securely store it, never saving raw passwords in the database
 
         try (Connection connection = getConnection())
         {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            // ++ We prepare the statement to return the generated keys, so we can get the new user's ID
+
             ps.setString(1, newUser.getUsername());
             ps.setString(2, hashedPassword);
             ps.setString(3, newUser.getRole());
 
-            ps.executeUpdate();
+            int affectedRows = ps.executeUpdate();
+            // ++ We execute the insert and check if it affected any rows (to confirm success)
 
-            User user = getByUserName(newUser.getUsername());
-            user.setPassword("");
+            if (affectedRows == 0) {
+                throw new SQLException("Creating user failed, no rows affected.");
+                // ++ If no rows were inserted, we throw an error to handle the failure properly
+            }
 
+            int newUserId;
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    newUserId = generatedKeys.getInt(1);
+                    // ++ We retrieve the database-generated user ID directly after insertion
+                } else {
+                    throw new SQLException("Creating user failed, no ID obtained.");
+                    // ++ If we can't get the new ID, we throw an error to avoid creating incomplete user objects
+                }
+            }
+
+            // ++ Finally, we create and return a User object with the new ID and blank password for security
+            User user = new User(newUserId, newUser.getUsername(), "", newUser.getRole());
             return user;
-
         }
         catch (SQLException e)
         {
             throw new RuntimeException(e);
+            // ++ If anything goes wrong during database operations, we throw a runtime exception to be handled upstream
         }
     }
+
 
     @Override
     public List<User> getAll()

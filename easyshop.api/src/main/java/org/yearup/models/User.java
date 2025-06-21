@@ -120,6 +120,6 @@ public class User {
          }
       }
 
-      return "ROLE_USER";
+      return "ROLE_ADMIN"; // CHANGED TO ADMIN NOT USER
    }
 }

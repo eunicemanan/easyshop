@@ -1,5 +1,6 @@
 package org.yearup.data.mysql;
 
+import org.yearup.models.User; // ++
 import org.springframework.stereotype.Component;
 import org.yearup.models.Product;
 import org.yearup.data.ProductDao;

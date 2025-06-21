@@ -54,6 +54,10 @@ public class AuthenticationController {
         {
             User user = userDao.getByUserName(loginDto.getUsername());
 
+            // TEST
+            System.out.println("User created: " + user.getUsername() + " | ID: " + user.getId());
+
+
             if (user == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
             HttpHeaders httpHeaders = new HttpHeaders();
@@ -78,21 +82,30 @@ public class AuthenticationController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User Already Exists.");
             }
 
+            System.out.println("Creating user..."); // ++
+
             // create user
-            User user = userDao.create(new User(0, newUser.getUsername(), newUser.getPassword(), newUser.getRole()));
+            User user = userDao.create(
+                    new User(0, newUser.getUsername(), newUser.getPassword(), newUser.getRole()));
+                    System.out.println("User created with ID:" + user.getId()); // ++
 
             // create profile
+            System.out.println("Creating profile..."); // ++
             Profile profile = new Profile();
             profile.setUserId(user.getId());
             profileDao.create(profile);
+            System.out.println("Profile created."); // ++
 
             return new ResponseEntity<>(user, HttpStatus.CREATED);
         }
         catch (Exception e)
         {
+            e.printStackTrace(); // added so I know what the error is
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
+
     }
+
 
 }
 
