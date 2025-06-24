@@ -53,6 +53,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
         }
         catch (SQLException e)
         {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
 
