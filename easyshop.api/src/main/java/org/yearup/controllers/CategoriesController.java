@@ -26,7 +26,7 @@ public class CategoriesController {
     private ProductDao productDao;
 
     @Autowired // Spring injects instances of CategoryDao and ProductDao
-    public CategoriesController(CategoryDao categoryDao, ProductDao productDao){
+    public CategoriesController(CategoryDao categoryDao, ProductDao productDao) {
         this.categoryDao = categoryDao;
         this.productDao = productDao;
     }
@@ -69,7 +69,7 @@ public class CategoriesController {
         try {
             return categoryDao.create(category);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to add category: " + e.getMessage(),e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to add category: " + e.getMessage(), e);
         }
     }
 
@@ -84,15 +84,24 @@ public class CategoriesController {
         }
     }
 
-    @DeleteMapping("{id}") // DELETE /categories/{id} - Deletes a category
-    @PreAuthorize("hasRole('ROLE_ADMIN')") // Requires ADMIN role for this operation
+    // Inside CategoriesController.java delete method
+    @DeleteMapping("{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void deleteCategory(@PathVariable int id) {
         try {
+            // Check if any products are linked to this category BEFORE deleting
+            List<Product> associatedProducts = productDao.listByCategoryId(id); // Use your existing method
+            if (associatedProducts != null && !associatedProducts.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot delete category ID " + id + " because it still has associated products. Please remove or reassign products first.");
+            }
+
             Category existingCategory = categoryDao.getById(id);
             if (existingCategory == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category with ID " + id + " not found.");
             }
             categoryDao.delete(id);
+        } catch (ResponseStatusException ex) {
+            throw ex; // Re-throw our custom exception
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete category:" + e.getMessage(), e);
         }
