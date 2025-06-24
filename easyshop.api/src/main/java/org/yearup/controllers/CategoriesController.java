@@ -19,49 +19,41 @@ import java.util.List;
 // add annotation to allow cross site origin requests
 
 @RestController
-// tells Spring this class is a web controller where every method returns a response body, typically in JSON format.
-@RequestMapping("/categories")
-@CrossOrigin
+@RequestMapping("/categories") // Base path for all endpoints in this controller
+@CrossOrigin // Allows cross-origin requests from other domains
 public class CategoriesController {
     private CategoryDao categoryDao;
     private ProductDao productDao;
 
+    @Autowired // Spring injects instances of CategoryDao and ProductDao
+    public CategoriesController(CategoryDao categoryDao, ProductDao productDao){
+        this.categoryDao = categoryDao;
+        this.productDao = productDao;
+    }
 
-    // create an Autowired controller to inject the categoryDao and ProductDao
-@Autowired
-public CategoriesController(CategoryDao categoryDao, ProductDao productDao){
-    this.categoryDao = categoryDao;
-    this.productDao = productDao;
-}
-    // add the appropriate annotation for a get action
-    @GetMapping
+    @GetMapping // GET /categories - Retrieves all categories
     public List<Category> getAll() {
         try {
             return categoryDao.getAllCategories();
-            // find and return all categories
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch categories: " + e.getMessage(), e);
         }
     }
 
-    // add the appropriate annotation for a get action
-    @GetMapping
+    @GetMapping("{id}") // GET /categories/{id} - Retrieves a single category by ID
     public Category getById(@PathVariable int id) {
-        // get the category by id
-       try {
-           Category category = categoryDao.getById(id);
-           if (category == null) {
-               throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category with ID: " + id + " not found");
-               // if category not found, return 404 Not Found
-           } return category;
-       } catch (Exception e) {
-           throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch category by ID: " + e.getMessage(), e);
-       }
+        try {
+            Category category = categoryDao.getById(id);
+            if (category == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category with ID: " + id + " not found");
+            }
+            return category;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch category by ID: " + e.getMessage(), e);
+        }
     }
 
-    // the url to return all products in category 1 would look like this
-    // https://localhost:8080/categories/1/products
-    @GetMapping("{categoryId}/products")
+    @GetMapping("{categoryId}/products") // GET /categories/{categoryId}/products - Retrieves products by category ID
     public List<Product> getProductsById(@PathVariable int categoryId) {
         try {
             return productDao.listByCategoryId(categoryId);
@@ -69,42 +61,31 @@ public CategoriesController(CategoryDao categoryDao, ProductDao productDao){
             e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch products by category ID:" + e.getMessage(), e);
         }
-        // get a list of product by categoryId
     }
 
-    // add annotation to call this method for a POST action
-    // add annotation to ensure that only an ADMIN can call this function
-    @PostMapping
-    @PreAuthorize("hasRole('ROLE-ADMIN')")
+    @PostMapping // POST /categories - Adds a new category
+    @PreAuthorize("hasRole('ROLE_ADMIN')") // Requires ADMIN role for this operation
     public Category addCategory(@RequestBody Category category) {
         try {
             return categoryDao.create(category);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to add category: " + e.getMessage(),e);
         }
-        // insert the category
     }
 
-    // add annotation to call this method for a PUT (update) action - the url path must include the categoryId
-    // add annotation to ensure that only an ADMIN can call this function
-    @PutMapping("{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("{id}") // PUT /categories/{id} - Updates an existing category
+    @PreAuthorize("hasRole('ROLE_ADMIN')") // Requires ADMIN role for this operation
     public void updateCategory(@PathVariable int id, @RequestBody Category category) {
         try {
-            category.setCategoryId(id);
+            category.setCategoryId(id); // Ensure the ID from path is set on the object
             categoryDao.update(id, category);
-
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update category: " + e.getMessage(), e);
         }
-        // update the category by id
     }
 
-
-    // add annotation to call this method for a DELETE action - the url path must include the categoryId
-    // add annotation to ensure that only an ADMIN can call this function
-    @DeleteMapping("{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @DeleteMapping("{id}") // DELETE /categories/{id} - Deletes a category
+    @PreAuthorize("hasRole('ROLE_ADMIN')") // Requires ADMIN role for this operation
     public void deleteCategory(@PathVariable int id) {
         try {
             Category existingCategory = categoryDao.getById(id);
@@ -114,8 +95,6 @@ public CategoriesController(CategoryDao categoryDao, ProductDao productDao){
             categoryDao.delete(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete category:" + e.getMessage(), e);
-
         }
-        // delete the category by id
     }
 }
