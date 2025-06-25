@@ -22,9 +22,12 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
         List<Product> products = new ArrayList<>();
 
         // Start with a base query
-        String sql = "SELECT * FROM products WHERE 1=1";
+        String sql = "SELECT * FROM products WHERE 1=1"; // is 1 equal to 1? Basically always true!
 
         // Dynamically build the query
+        // "?" is a placeholder, we don't know what the user will search for
+        // != null means NOT equal to null - "If categoryId has a value(is not empty), then do something."
+        // += means "add more to the SQL query
         if (categoryId != null)
             sql += " AND category_id = ?";
         if (minPrice != null)
@@ -37,15 +40,28 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
         try (Connection connection = getConnection()) {
             PreparedStatement statement = connection.prepareStatement(sql);
             int paramIndex = 1;
+            // Start counting from 1 because SQL placeholders (?) are 1-based in PreparedStatement
 
             if (categoryId != null)
+                // If categoryId has a value (is not empty), set the next ? in the SQL to that value
+                // setInt is used because categoryId is an integer
                 statement.setInt(paramIndex++, categoryId);
+
             if (minPrice != null)
+                // If minPrice has a value, set the next ? in the SQL to that value
+                // setBigDecimal is used for decimal numbers like prices
                 statement.setBigDecimal(paramIndex++, minPrice);
+
             if (maxPrice != null)
+                // If maxPrice has a value, set the next ? in the SQL to that value
+                // This fills in the next ? with the maximum price
                 statement.setBigDecimal(paramIndex++, maxPrice);
+
             if (color != null)
+                // If color has a value, set the next ? in the SQL to that value
+                // setString is used because color is a text value
                 statement.setString(paramIndex++, color);
+
 
             ResultSet row = statement.executeQuery();
 
