@@ -85,25 +85,39 @@ public class CategoriesController {
     }
 
     // Inside CategoriesController.java delete method
+    // This method handles HTTP DELETE requests to delete a category by its ID
     @DeleteMapping("{id}")
+// Only users with the ADMIN role are allowed to perform this action
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void deleteCategory(@PathVariable int id) {
         try {
-            // Check if any products are linked to this category BEFORE deleting
-            List<Product> associatedProducts = productDao.listByCategoryId(id); // Use your existing method
+            // Step 1: Check if there are any products linked to this category
+            // If there are, we should not delete the category
+            List<Product> associatedProducts = productDao.listByCategoryId(id);
             if (associatedProducts != null && !associatedProducts.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot delete category ID " + id + " because it still has associated products. Please remove or reassign products first.");
+                // If products are found, throw an error to prevent deletion
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Cannot delete category ID " + id +
+                                " because it still has associated products. Please remove or reassign products first.");
             }
 
+            // Step 2: Check if the category exists in the database
             Category existingCategory = categoryDao.getById(id);
             if (existingCategory == null) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category with ID " + id + " not found.");
+                // If the category doesn't exist, throw a 'not found' error
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Category with ID " + id + " not found.");
             }
+
+            // Step 3: If no products are linked and the category exists, delete it
             categoryDao.delete(id);
         } catch (ResponseStatusException ex) {
-            throw ex; // Re-throw our custom exception
+            // If we already threw a specific error above, re-throw it
+            throw ex;
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete category:" + e.getMessage(), e);
+            // Catch any other unexpected errors and return a generic server error
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to delete category: " + e.getMessage(), e);
         }
     }
 }

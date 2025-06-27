@@ -50,28 +50,43 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public Category getById(int categoryId) {
         Category category = null;
-        String sql = """
-           SELECT category_id,
-            name,
-            description
-            FROM categories
-            WHERE category_id = ?""";
 
+        // SQL query with a placeholder (?) for the category ID
+        String sql = """
+       SELECT category_id,
+              name,
+              description
+         FROM categories
+        WHERE category_id = ?""";
+
+        // Try-with-resources ensures the connection and statement are automatically closed
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, categoryId); // Set the parameter for the SQL query
 
+            // Set the value for the first parameter (?) in the SQL query
+            // JDBC uses 1-based indexing for parameters, so 1 refers to the first '?'
+            statement.setInt(1, categoryId);
+
+            // Execute the query and store the result in a ResultSet
             try (ResultSet row = statement.executeQuery()) {
-                if (row.next()) { // Check if a row was returned
+
+                // Check if a result was returned
+                if (row.next()) {
+                    // Map the result row to a Category object using a helper method
                     category = mapRow(row);
                 }
             }
+
         } catch (SQLException e) {
+            // Print the stack trace and throw a runtime exception with a custom message
             e.printStackTrace();
             throw new RuntimeException("Error retrieving category by ID: " + e.getMessage(), e);
         }
-        return category; // Will return null if not found
+
+        // Return the found category, or null if no match was found
+        return category;
     }
+
 
     @Override
     public Category create(Category category) {
