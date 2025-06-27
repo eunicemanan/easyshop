@@ -28,12 +28,12 @@ As the backend developer, I was responsible for:
 
 # 🧪 Testing
 ![Testing using PostMan](image-1.png)
-All endpoints were tested using Postman, with JWT tokens used for authenticated requests. Unit tests were written to validate bug fixes and controller logic.
-This screenshot demonstrates how I used Postman to test the product search functionality of the EasyShop API. By sending a GET request with query parameters for minPrice and maxPrice, I verified that the API correctly filters and returns only the products within the specified price range. This kind of testing ensures that the dynamic SQL logic works as expected and that the backend handles user input securely and accurately.
+- All endpoints were tested using Postman, with JWT tokens used for authenticated requests. Unit tests were written to validate bug fixes and controller logic.
+- This screenshot demonstrates how I used Postman to test the product search functionality of the EasyShop API. By sending a GET request with query parameters for minPrice and maxPrice, I verified that the API correctly filters and returns only the products within the specified price range. This kind of testing ensures that the dynamic SQL logic works as expected and that the backend handles user input securely and accurately.
 
 # 🧠 Interesting Code Snippet
 ![Dynamic Product Search Logic](image.png)
-This method is a great example of writing flexible and secure backend logic. It dynamically builds an SQL query based on user-provided filters like category, price, and color. By using parameterized queries and tracking the parameter index with paramIndex, it ensures both safety from SQL injection and adaptability to different search scenarios. This makes the code not only functional but also scalable and easy to maintain.
+- This method is a great example of writing flexible and secure backend logic. It dynamically builds an SQL query based on user-provided filters like category, price, and color. By using parameterized queries and tracking the parameter index with paramIndex, it ensures both safety from SQL injection and adaptability to different search scenarios. This makes the code not only functional but also scalable and easy to maintain.
 
 # 📘 Project Summary & Reflection
 This capstone project was my first experience building a backend API using Java, Spring Boot, and MySQL. I implemented core features like category management and product search, and I tested my endpoints using Postman. One of the most interesting parts was learning how to build dynamic SQL queries securely using parameterized inputs and managing parameter indexes correctly.
